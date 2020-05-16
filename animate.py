@@ -36,7 +36,7 @@ def normalize_kp(kp_source, kp_driving, kp_driving_initial, adapt_movement_scale
     return kp_new
 
 
-def animate(config, generator, kp_detector, checkpoint, log_dir, dataset):
+def animate(config, generator, kp_detector, checkpoint, log_dir, dataset, if_disable=True):
     log_dir = os.path.join(log_dir, 'animation')
     png_dir = os.path.join(log_dir, 'png')
     animate_params = config['animate_params']
@@ -62,7 +62,7 @@ def animate(config, generator, kp_detector, checkpoint, log_dir, dataset):
     generator.eval()
     kp_detector.eval()
 
-    for it, x in tqdm(enumerate(dataloader)):
+    for it, x in tqdm(enumerate(dataloader),disable=if_disable):
         with torch.no_grad():
             predictions = []
             visualizations = []
