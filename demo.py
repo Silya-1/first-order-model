@@ -54,7 +54,7 @@ def load_checkpoints(config_path, checkpoint_path, cpu=False):
     return generator, kp_detector
 
 
-def make_animation(source_image, driving_video, generator, kp_detector, relative=True, adapt_movement_scale=True, cpu=False):
+def make_animation(source_image, driving_video, generator, kp_detector, relative=True, adapt_movement_scale=True, cpu=False, disable_tqdm=True):
     with torch.no_grad():
         predictions = []
         source = torch.tensor(source_image[np.newaxis].astype(np.float32)).permute(0, 3, 1, 2)
@@ -64,7 +64,7 @@ def make_animation(source_image, driving_video, generator, kp_detector, relative
         kp_source = kp_detector(source)
         kp_driving_initial = kp_detector(driving[:, :, 0])
 
-        for frame_idx in tqdm(range(driving.shape[2])):
+        for frame_idx in tqdm(range(driving.shape[2]), disable=disable_tqdm):
             driving_frame = driving[:, :, frame_idx]
             if not cpu:
                 driving_frame = driving_frame.cuda()
