@@ -9,9 +9,10 @@ step = 15
 N_total_images = 2
 folders = ['source', 'drive', 'predict']
 
-#dataset_step_mode = 2 ### uses every second frame for dataset
-dataset_step_mode = -1 ### uses n_frames most distant frames for dataset
-n_frames = 10 # define only if  dataset_step_mode == -1
+dataset_step_mode = 'grid'
+grid_step = 2
+#dataset_step_mode = 'most_distant'
+#n_frames = 10 # define if  dataset_step_mode == 'most_distant'
 
 import imageio
 from IPython.display import HTML
@@ -130,10 +131,10 @@ for n_source, source_path in enumerate(path_getter(PATH_TO_IMG_DIR)):
     ids_for_best_preds = recognition(source_image, predictions)
 
     ### set the range for different modes
-    if dataset_step_mode > 0:
-        frame_range = ids_for_best_preds[:len(ids_for_best_preds) : dataset_step_mode]
-    elif dataset_step_mode == -1:
-        frame_range = ids_for_best_preds[:min(n_frames, len(ids_for_best_preds))]
+    if dataset_step_mode == 'grid':
+        frame_range = ids_for_best_preds[: len(ids_for_best_preds) : grid_step]
+    elif dataset_step_mode == 'most_distant':
+        frame_range = ids_for_best_preds[: min(n_frames, len(ids_for_best_preds))]
     else:
         print('Unknown dataset_step_mode')
         break
