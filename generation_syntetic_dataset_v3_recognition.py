@@ -119,8 +119,8 @@ for n_source, source_path in enumerate(path_getter(PATH_TO_IMG_DIR)):
     ### here to apply recognition net###
     ###------------------------------###
     
-    source_image_encoding = face_recognition.face_encodings(source_image)[0]
-    predictions_encoding = [face_recognition.face_encodings(frame)[0] for frame in predictions]
+    source_image_encoding = face_recognition.face_encodings(np.array(source_image*256).astype(np.uint8))[0]
+    predictions_encoding = [face_recognition.face_encodings(np.array(frame*256).astype(np.uint8))[0] for frame in predictions]
     
     face_distances = face_recognition.face_distance(predictions_encoding, source_image_encoding)
     ids_for_best_preds = np.argsort(face_distances)[::-1]
