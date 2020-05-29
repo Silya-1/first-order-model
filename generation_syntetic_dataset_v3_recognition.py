@@ -6,6 +6,7 @@ CONFIG_PATH = '/content/first-order-model/config/vox-256.yaml'
 NEW_DATASET_PATH = '/content/gdrive/My Drive/dl/celeb_hq/test_new_celeb'
 
 step = 15
+n_frames_to_use = 20 # number of best frames to use after recognition a.k.a threshold
 N_total_images = 2
 folders = ['source', 'drive', 'predict']
 
@@ -127,8 +128,8 @@ for n_source, source_path in enumerate(path_getter(PATH_TO_IMG_DIR)):
     ###------------------------------###
     ###------------------------------###
 
-    ### choose 20 frames from video if possible, else all frames###
-    for id in ids_for_best_preds[:min(20, len(ids_for_best_preds))]:
+    ### choose n_frames_to_use frames from video if possible, else all frames###
+    for id in ids_for_best_preds[:min(n_frames_to_use, len(ids_for_best_preds))]:
       drive = driving_video[id]
       pred = predictions[id]
       triplet = np.stack([source_image[None,:,:,:], 
