@@ -16,6 +16,7 @@ import matplotlib.animation as animation
 from PIL import Image  
 from skimage.transform import resize
 from skimage import img_as_ubyte
+import face_recognition
 
 import numpy as np
 np.random.seed(0)
