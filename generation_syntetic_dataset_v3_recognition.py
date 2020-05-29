@@ -113,8 +113,9 @@ for n_source, source_path in enumerate(path_getter(PATH_TO_IMG_DIR)):
     ids = np.arange(0, len(driving_video), step)
     driving_video = np.array(driving_video)[ids]
 
-    ### id of closest frame
-    best_i = recognition(source_image, driving_video)[-1]
+    ### id of closest frame by keypoints
+    norms_for_best_source = get_key_points(source_image, driving_video)
+    best_i = np.argmin(norms_for_best_source)
     
     swap = driving_video[0]
     driving_video[0] = driving_video[best_i]
