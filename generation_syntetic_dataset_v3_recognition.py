@@ -6,9 +6,12 @@ CONFIG_PATH = '/content/first-order-model/config/vox-256.yaml'
 NEW_DATASET_PATH = '/content/gdrive/My Drive/dl/celeb_hq/test_new_celeb'
 
 step = 15
-n_frames_to_use = 20 # number of best frames to use after recognition a.k.a threshold
 N_total_images = 2
 folders = ['source', 'drive', 'predict']
+
+#dataset_step_mode = 2 ### uses every second frame for dataset
+dataset_step_mode = -1 ### uses n_frames most distant frames for dataset
+n_frames = 10 # define only if  dataset_step_mode == -1
 
 import imageio
 from IPython.display import HTML
@@ -50,6 +53,15 @@ def save(name, root_path, name_folder, data):
 for folder in folders:
   remove(folder, NEW_DATASET_PATH)
   
+  
+def recognition(source_image, driving_frames):
+    source_image_encoding = face_recognition.face_encodings(np.array(source_image*256).astype(np.uint8))[0]
+    driving_encoding = [face_recognition.face_encodings(np.array(frame*256).astype(np.uint8))[0] for frame in driving_frames]
+    
+    face_distances = face_recognition.face_distance(driving_encoding, source_image_encoding)
+    ids_best = np.argsort(face_distances)[::-1]
+    return(ids_best)
+  
 
 def get_key_points(source, driving, cpu=False):
     import face_alignment
@@ -70,7 +82,7 @@ def get_key_points(source, driving, cpu=False):
         kp_driving = fa.get_landmarks(255 * image)[0]
         kp_driving = normalize_kp(kp_driving)
         norms.append((np.abs(kp_source - kp_driving) ** 2).sum())
-       
+    
     return np.array(norms)
 
 
@@ -100,12 +112,9 @@ for n_source, source_path in enumerate(path_getter(PATH_TO_IMG_DIR)):
     ### ids - indexes of frames that we will use for dataset making, every "step" frame###
     ids = np.arange(0, len(driving_video), step)
     driving_video = np.array(driving_video)[ids]
-    
-    ### get_key_points returns an array of L2 norms of source image to all frames in driving_video###
-    norms_for_best_source = get_key_points(source_image, driving_video )
-    
-    ###closest frame index###
-    best_i = np.argmin(norms_for_best_source)
+
+    ### id of closest frame
+    best_i = recognition(source_image, driving_video)[-1]
     
     swap = driving_video[0]
     driving_video[0] = driving_video[best_i]
@@ -116,20 +125,20 @@ for n_source, source_path in enumerate(path_getter(PATH_TO_IMG_DIR)):
                                  adapt_movement_scale=True)
     
     
-    ### here to apply recognition net###
-    ###------------------------------###
-    
-    source_image_encoding = face_recognition.face_encodings(np.array(source_image*256).astype(np.uint8))[0]
-    predictions_encoding = [face_recognition.face_encodings(np.array(frame*256).astype(np.uint8))[0] for frame in predictions]
-    
-    face_distances = face_recognition.face_distance(predictions_encoding, source_image_encoding)
-    ids_for_best_preds = np.argsort(face_distances)[::-1]
-    
-    ###------------------------------###
-    ###------------------------------###
+    ###apply recognition net###
+    ids_for_best_preds = recognition(source_image, predictions)
 
-    ### choose n_frames_to_use frames from video if possible, else all frames###
-    for id in ids_for_best_preds[:min(n_frames_to_use, len(ids_for_best_preds))]:
+    ### set the range for different modes
+    if dataset_step_mode > 0:
+        frame_range = ids_for_best_preds[:len(ids_for_best_preds) : dataset_step_mode]
+    elif dataset_step_mode == -1:
+        frame_range = ids_for_best_preds[:min(n_frames, len(ids_for_best_preds))]
+    else:
+        print('Unknown dataset_step_mode')
+        break
+        
+        
+    for id in frame_range:
       drive = driving_video[id]
       pred = predictions[id]
       triplet = np.stack([source_image[None,:,:,:], 
