@@ -143,7 +143,6 @@ def generate_data(generator, kp_detector, N_total_images, N_img_by_video, step_v
                   video_path, img_path, new_dataset_path, folders, face_comparison_mode,
                   dataset_step_mode, n_frames, grid_step):
     total = 0
-    N_image_by_video = N_total_images // ( N )
     with tqdm(enumerate(path_getter(video_path))) as tq:
         for n_video, video_path in tq:
             if total >= N_total_images:
