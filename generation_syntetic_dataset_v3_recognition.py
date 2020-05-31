@@ -1,4 +1,3 @@
-
 import argparse
 
 from demo import load_checkpoints, make_animation, find_best_frame
@@ -35,59 +34,59 @@ torch.manual_seed(0)
 torch.backends.cudnn.deterministic = True
 
 parser = argparse.ArgumentParser(description='Process neccesary args')
-parser.add_argument('--fomm_path', action='store', dest='fomm_path',
+parser.add_argument('--fomm_path', action='store', dest='fomm_path', type=str,
                     default='/content/first-order-model',
                     help='Path to fomm')
 
-parser.add_argument('--img_path', action='store', dest='img_path',
+parser.add_argument('--img_path', action='store', dest='img_path', type=str,
                     default='/content/gdrive/My Drive/dl/celeb_hq/256x256/data256x256/',
                     help='Path to image dir')
 
-parser.add_argument('--chekpoint_path', action='store', dest='chekpoint_path',
+parser.add_argument('--chekpoint_path', action='store', dest='chekpoint_path', type=str,
                     default='/content/gdrive/My Drive/first-order-motion-model/vox-cpk.pth.tar',
                     help='Path to checkpoint')
 
-parser.add_argument('--video_path', action='store', dest='video_path',
+parser.add_argument('--video_path', action='store', dest='video_path', type=str,
                     default='/content/gdrive/My Drive/dl/video_celeb/',
                     help='Path to video folder')
 
-parser.add_argument('--config_path', action='store', dest='config_path',
+parser.add_argument('--config_path', action='store', dest='config_path', type=str,
                     default='/content/first-order-model/config/vox-256.yaml',
                     help='Path to config folder')
 
-parser.add_argument('--new_dataset_path', action='store', dest='new_dataset_path',
+parser.add_argument('--new_dataset_path', action='store', dest='new_dataset_path', type=str,
                     default='/content/gdrive/My Drive/dl/celeb_hq/test_new_celeb',
                     help='Path to new dataset folder')
 
-parser.add_argument('--step_video', action='store', dest='step_video',
+parser.add_argument('--step_video', action='store', dest='step_video', type=int,
                     default=30,
                     help='Step in video grid')
 
-parser.add_argument('--dataset_step_mode', action='store', dest='dataset_step_mode',
+parser.add_argument('--dataset_step_mode', action='store', dest='dataset_step_mode', type=str,
                     default='grid',
                     help='Mode to choose frames')
 
-parser.add_argument('--grid_step', action='store', dest='grid_step',
+parser.add_argument('--grid_step', action='store', dest='grid_step', type=int,
                     default=2,
                     help='Grid step')
 
-parser.add_argument('--n_frames', action='store', dest='n_frames',
+parser.add_argument('--n_frames', action='store', dest='n_frames', type=int,
                     default=5,
                     help='Number of most distant frames')
 
-parser.add_argument('--face_comparison_mode', action='store', dest='face_comparison_mode',
+parser.add_argument('--face_comparison_mode', action='store', dest='face_comparison_mode', type=str,
                     default='recognition',
                     help='Mode to select distance')
 
-parser.add_argument('--N_total_images', action='store', dest='N_total_images',
+parser.add_argument('--N_total_images', action='store', dest='N_total_images', type=int,
                     default=10,
                     help='Number of total images to generate')
 
-parser.add_argument('--folders_to_store', action='store', dest='folders_to_store',
+parser.add_argument('--folders_to_store', action='store', dest='folders_to_store', type=list,
                     default=['source', 'drive', 'predict'],
                     help='Name of folders for new dataset')
 
-parser.add_argument('--if_clean_folders', action='store', dest='if_clean_folders',
+parser.add_argument('--if_clean_folders', action='store', dest='if_clean_folders', type=bool,
                     default=True,
                     help='Flag to clear folders')
 
