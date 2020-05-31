@@ -93,14 +93,14 @@ def main():
             
             
             ### apply face comparison
-            if face_comparison_mode = 'keypoints':
+            if face_comparison_mode == 'keypoints':
                 try:
                     norms_for_best_source = get_key_points(source_image, predictions)
                 except (RuntimeError, TypeError, NameError):
                     print('Image not processed by get_key_points, moving to next image')
                     continue
                     
-            elif face_comparison_mode = 'recognition_net':
+            elif face_comparison_mode == 'recognition_net':
                 try:
                     norms_for_best_source = recognition(source_image, predictions)
                 except (RuntimeError, TypeError, NameError):
