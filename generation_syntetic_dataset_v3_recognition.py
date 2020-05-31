@@ -163,7 +163,7 @@ def generate_data(generator, kp_detector, N_total_images, N_img_by_video, step_v
                 try:
                     norms_for_best_source = get_key_points(source_image, driving_video)
                 except Exception:
-                    print(f' Image not processed by get_key_points: {img_path} - {video_path}')
+                    print(f' Image not processed by get_key_points: {source_path} - {video_path}')
                     continue
 
                 best_i = np.argmin(norms_for_best_source)
@@ -177,7 +177,7 @@ def generate_data(generator, kp_detector, N_total_images, N_img_by_video, step_v
                     try:
                         norms_for_best_preds = get_key_points(source_image, predictions)
                     except Exception:
-                        print(f' Image not processed by get_key_points: {img_path} - {video_path}')
+                        print(f' Image not processed by get_key_points: {source_path} - {video_path}')
                         continue
 
                 elif face_comparison_mode == 'recognition':
@@ -185,7 +185,7 @@ def generate_data(generator, kp_detector, N_total_images, N_img_by_video, step_v
                         norms_for_best_preds = recognition(
                             source_image, predictions)
                     except Exception:
-                        print(f' Image not processed by recognition_net: {img_path} - {video_path}')
+                        print(f' Image not processed by recognition_net: {source_path} - {video_path}')
                         continue
                 else:
                     print("Uknown parameter")
@@ -213,7 +213,6 @@ def generate_data(generator, kp_detector, N_total_images, N_img_by_video, step_v
                     total += 1
                     if total >= N_total_images:
                         break
-                tq.set_postfix({'total_img': f'{total}'})
                 
             tq.set_postfix({'total_img': f'{total}'})
                             
