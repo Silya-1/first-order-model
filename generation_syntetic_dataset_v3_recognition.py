@@ -159,8 +159,8 @@ def generate_data(generator, kp_detector, N_total_images, step_video,
                         norms_for_best_source = get_key_points(
                             source_image, driving_video)
                     except Exception:
-                        print(
-                            'Image not processed by get_key_points, moving to next image')
+                        print('Image not processed by get_key_points, moving to next image')
+                        print('Image:', source_path,'\nVideo:', video_path)
                         continue
 
                     best_i = np.argmin(norms_for_best_source)
@@ -175,8 +175,8 @@ def generate_data(generator, kp_detector, N_total_images, step_video,
                             norms_for_best_preds = get_key_points(
                                 source_image, predictions)
                         except Exception:
-                            print(
-                                'Image not processed by get_key_points, moving to next image')
+                            print('Image not processed by get_key_points, moving to next image')
+                            print('Image:', source_path,'\nVideo:', video_path)
                             continue
 
                     elif face_comparison_mode == 'recognition':
@@ -184,11 +184,11 @@ def generate_data(generator, kp_detector, N_total_images, step_video,
                             norms_for_best_preds = recognition(
                                 source_image, predictions)
                         except Exception:
-                            print(
-                                'Image not processed by recognition_net, moving to next image')
+                            print('Image not processed by recognition_net, moving to next image')
+                            print('Image:', source_path,'\nVideo:', video_path)
                             continue
                     else:
-                        print("Uknown parameter")
+                        print("Unknown parameter")
                         sys.exit(-1)
 
                     ids_for_best_preds = np.argsort(norms_for_best_preds)[::-1]
@@ -200,7 +200,7 @@ def generate_data(generator, kp_detector, N_total_images, step_video,
                         ids_for_best_preds = ids_for_best_preds[: min(
                             n_frames, len(ids_for_best_preds))]
                     else:
-                        print("Uknown parameter")
+                        print("Unknown parameter")
                         sys.exit(-1)
 
                     for id in ids_for_best_preds:
