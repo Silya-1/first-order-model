@@ -74,7 +74,12 @@ def check_args(args):
     assert os.path.isdir(args.img_path), 'Path for directory with images is not valid'
     assert args.grid_step > 0, 'Number is not valid, must be grather then 0'
     assert args.n_frames > 0, 'Number is not valid, must be grather then 0'
-
+    
+    args.N_video = len(os.listdir(args.video_path))
+    args.N_img = len(os.listdir(args.img_path))
+    args.N_img_by_video = args.N_total_images // (args.N_video * args.n_frames) + 1
+    return args
+    
 
 def clean_one_folder(folder_name, folder_path):
     for f in glob.glob(os.path.join(folder_path, folder_name, "*")):
@@ -134,92 +139,92 @@ def recognition(source_image, driving_frames):
     return(face_distances)
 
 
-def generate_data(generator, kp_detector, N_total_images, step_video,
+def generate_data(generator, kp_detector, N_total_images, N_img_by_video, step_video,
                   video_path, img_path, new_dataset_path, folders, face_comparison_mode,
                   dataset_step_mode, n_frames, grid_step):
     total = 0
+    N_image_by_video = N_total_images // ( N )
     with tqdm(enumerate(path_getter(video_path))) as tq:
         for n_video, video_path in tq:
             if total >= N_total_images:
                 break
             driving_video = imageio.mimread(video_path, memtest=False)
-            driving_video = [resize(frame, (256, 256))[..., :3]
-                             for frame in driving_video]
+            driving_video = [resize(frame, (256, 256))[..., :3] for frame in driving_video]
 
             ids = np.arange(0, len(driving_video), step_video)
             driving_video = np.array(driving_video)[ids]
+            
+            random_img = np.random.choice(path_getter(img_path), size=N_img_by_video, replace=False)
+            for n_source, source_path in enumerate(random_img):
+                if total >= N_total_images:
+                    break
+                source_image = imageio.imread(source_path)
+                source_image = resize(source_image, (256, 256))[..., :3]
 
-            for n_source, source_path in enumerate(path_getter(img_path)):
-                    if total >= N_total_images:
-                        break
-                    source_image = imageio.imread(source_path)
-                    source_image = resize(source_image, (256, 256))[..., :3]
+                try:
+                    norms_for_best_source = get_key_points(source_image, driving_video)
+                except Exception:
+                    print(f' Image not processed by get_key_points: {img_path} - {video_path}')
+                    continue
 
+                best_i = np.argmin(norms_for_best_source)
+                driving_video[0], driving_video[best_i] = driving_video[best_i], driving_video[0]
+
+                predictions = make_animation(source_image, driving_video,
+                                             generator, kp_detector, relative=True,
+                                             adapt_movement_scale=True)
+
+                if face_comparison_mode == 'keypoints':
                     try:
-                        norms_for_best_source = get_key_points(
-                            source_image, driving_video)
+                        norms_for_best_preds = get_key_points(source_image, predictions)
                     except Exception:
-                        print(
-                            'Image not processed by get_key_points, moving to next image')
+                        print(f' Image not processed by get_key_points: {img_path} - {video_path}')
                         continue
 
-                    best_i = np.argmin(norms_for_best_source)
-                    driving_video[0], driving_video[best_i] = driving_video[best_i], driving_video[0]
+                elif face_comparison_mode == 'recognition':
+                    try:
+                        norms_for_best_preds = recognition(
+                            source_image, predictions)
+                    except Exception:
+                        print(f' Image not processed by recognition_net: {img_path} - {video_path}')
+                        continue
+                else:
+                    print("Uknown parameter")
+                    sys.exit(-1)
 
-                    predictions = make_animation(source_image, driving_video,
-                                                 generator, kp_detector, relative=True,
-                                                 adapt_movement_scale=True)
+                ids_for_best_preds = np.argsort(norms_for_best_preds)[::-1]
 
-                    if face_comparison_mode == 'keypoints':
-                        try:
-                            norms_for_best_preds = get_key_points(
-                                source_image, predictions)
-                        except Exception:
-                            print(
-                                'Image not processed by get_key_points, moving to next image')
-                            continue
+                if dataset_step_mode == 'grid':
+                    ids_for_best_preds = ids_for_best_preds[: len(ids_for_best_preds): grid_step]
+                elif dataset_step_mode == 'most_distant':
+                    ids_for_best_preds = ids_for_best_preds[: min(n_frames, len(ids_for_best_preds))]
+                else:
+                    print("Uknown parameter")
+                    sys.exit(-1)
 
-                    elif face_comparison_mode == 'recognition':
-                        try:
-                            norms_for_best_preds = recognition(
-                                source_image, predictions)
-                        except Exception:
-                            print(
-                                'Image not processed by recognition_net, moving to next image')
-                            continue
-                    else:
-                        print("Uknown parameter")
-                        sys.exit(-1)
-
-                    ids_for_best_preds = np.argsort(norms_for_best_preds)[::-1]
-
-                    if dataset_step_mode == 'grid':
-                        ids_for_best_preds = ids_for_best_preds[: len(
-                            ids_for_best_preds): grid_step]
-                    elif dataset_step_mode == 'most_distant':
-                        ids_for_best_preds = ids_for_best_preds[: min(
-                            n_frames, len(ids_for_best_preds))]
-                    else:
-                        print("Uknown parameter")
-                        sys.exit(-1)
-
-                    for id in ids_for_best_preds:
-                        drive = driving_video[id]
-                        pred = predictions[id]
-                        triplet = np.stack([source_image[None, :, :, :],
-                                            drive[None, :, :, :], pred[None, :, :, :]], axis=0)
-                        name = '_'.join([str(n_source), str(n_video), str(id)])
-                        for i, folder in enumerate(folders):
-                            save(name, new_dataset_path, folder, triplet[i])
-                        total += 1
-                        if total >= N_total_images:
-                            break
-            
+                for id in ids_for_best_preds:
+                    drive = driving_video[id]
+                    pred = predictions[id]
+                    triplet = np.stack([source_image[None, :, :, :],
+                                        drive[None, :, :, :],
+                                        pred[None, :, :, :]], axis=0)
+                    name = '_'.join([str(n_source), str(n_video), str(id)])
+                    for i, folder in enumerate(folders):
+                        save(name, new_dataset_path, folder, triplet[i])
+                    total += 1
+                    if total >= N_total_images:
+                        break
+                tq.set_postfix({'total_img': f'{total}'})
+                
             tq.set_postfix({'total_img': f'{total}'})
                             
 def main():
     args = parse_args()
-    check_args(args)
+    args = check_args(args)
+    
+    print(f'Raw Images total: {args.N_img}')
+    print(f'Raw Videos total: {args.N_video}')
+    print(f'Ready to generate {args.N_total_images} image')
     
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
@@ -235,6 +240,7 @@ def main():
     generate_data(generator=generator,
                   kp_detector=kp_detector,
                   N_total_images=args.N_total_images,
+                  N_img_by_video=args.N_img_by_video,
                   step_video=args.step_video,
                   video_path=args.video_path,
                   img_path=args.img_path,
