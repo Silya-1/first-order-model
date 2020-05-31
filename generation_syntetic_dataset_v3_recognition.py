@@ -4,7 +4,6 @@ import os
 import glob
 import argparse
 from tqdm import tqdm
-
 import numpy as np
 import torch
 from torch.nn.functional import adaptive_avg_pool2d
@@ -22,7 +21,7 @@ import face_alignment
 
 from scipy.spatial import ConvexHull
 from scipy import linalg
-
+from itertools import cycle
 from demo import load_checkpoints, make_animation, find_best_frame
 
 import warnings
@@ -144,7 +143,7 @@ def generate_data(generator, kp_detector, N_total_images, N_img_by_video, step_v
                   dataset_step_mode, n_frames, grid_step):
     total = 0
     with tqdm(enumerate(path_getter(video_path))) as tq:
-        for n_video, video_path in tq:
+        for n_video, video_path in cycle(tq):
             if total >= N_total_images:
                 break
             driving_video = imageio.mimread(video_path, memtest=False)
