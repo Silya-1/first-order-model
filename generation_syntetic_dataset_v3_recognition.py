@@ -188,7 +188,7 @@ def generate_data(generator, kp_detector, N_total_images, N_img_by_video, step_v
                         print(f' Image not processed by recognition_net: {source_path} - {video_path}')
                         continue
                 else:
-                    print("Uknown parameter")
+                    print("Unknown parameter")
                     sys.exit(-1)
 
                 ids_for_best_preds = np.argsort(norms_for_best_preds)[::-1]
@@ -198,7 +198,7 @@ def generate_data(generator, kp_detector, N_total_images, N_img_by_video, step_v
                 elif dataset_step_mode == 'most_distant':
                     ids_for_best_preds = ids_for_best_preds[: min(n_frames, len(ids_for_best_preds))]
                 else:
-                    print("Uknown parameter")
+                    print("Unknown parameter")
                     sys.exit(-1)
 
                 for id in ids_for_best_preds:
