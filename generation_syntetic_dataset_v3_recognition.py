@@ -206,7 +206,7 @@ def generate_data(generator, kp_detector, N_total_images, N_img_by_video, step_v
                     triplet = np.stack([source_image[None, :, :, :],
                                         drive[None, :, :, :],
                                         pred[None, :, :, :]], axis=0)
-                    name = '_'.join([str(n_source), str(n_video), str(id)])
+                    name = '_'.join([str(total), str(n_video), str(id)])
                     for i, folder in enumerate(folders):
                         save(name, new_dataset_path, folder, triplet[i])
                     total += 1
